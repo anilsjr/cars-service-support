@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 
 import connectToDB from './config/db.config.js';
 import userRoutes from './routes/user.route.js';
+import authRoutes from './routes/auth.route.js';
 
 // Initialize environment variables
 dotenv.config();
@@ -22,14 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1, // limit each IP to 100 requests per windowMs
-});
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1,
+    max: 1000,
     handler: (req, res) => {
       res.status(429).json({
         status: 429,
@@ -40,14 +37,15 @@ app.use(
 );
 
 // API routes
+app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes);
 
 // Root route
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Library Management System API is running...' });
+  res.status(200).json({ message: 'Vehicle Service System API is running...' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });

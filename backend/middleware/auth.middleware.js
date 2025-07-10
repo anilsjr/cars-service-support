@@ -12,8 +12,8 @@ function authMiddleware(req, res, next) {
     }
 
     // You may want to use a secret from env or config
-    const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-
+    const JWT_SECRET = process.env.JWT_SECRET;
+    
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: 'Invalid or expired token.' });
