@@ -22,9 +22,6 @@ const app = express();
 // Move static file serving after other middleware configurations
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(cors());
-app.use(helmet());
 
 
 /**
