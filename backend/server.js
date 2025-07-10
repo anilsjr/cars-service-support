@@ -1,13 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
-
 // import cors from 'cors';
 // import cookieParser from 'cookie-parser';
-import path from 'path';
-import rateLimit from 'express-rate-limit';
+// import path from 'path';
+// import rateLimit from 'express-rate-limit';
 
-import connectToDB from './config/db_config.js';
+import connectToDB from './config/db.config.js';
 import userRoutes from './routes/user.route.js'
 
 /**
@@ -16,13 +15,8 @@ import userRoutes from './routes/user.route.js'
 connectToDB();
 
 // Create Express application instance
+
 const app = express();
-
-
-
-
-
-
 
 
 // Move static file serving after other middleware configurations
@@ -31,9 +25,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 app.use(helmet());
-
-
-
 
 
 /**
@@ -60,7 +51,3 @@ app.use((req, res, next) => {
 //   console.error(err.stack);
 //   res.status(500).json({ message: 'Internal server error', error: err.message });
 // });
-
-export default app;
-
-

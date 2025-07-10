@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import functions from 'firebase-functions'
 dotenv.config();
 
 function connectToDB() {
