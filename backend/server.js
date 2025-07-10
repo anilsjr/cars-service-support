@@ -2,21 +2,13 @@ import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import morgan from 'morgan';
-import winston from 'winston';
+// import cors from 'cors';
+// import cookieParser from 'cookie-parser';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 import connectToDB from './config/db_config.js';
 import userRoutes from './routes/user.route.js'
-import bookRoutes from './routes/book.route.js';
-// import { logger } from './utils/logger-winston.js';
-
 
 /**
  * Initializes database connection

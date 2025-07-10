@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
+    "path": "^0.12.7",
+    "url": "^0.11.4"
+  },
+  "name": "vss-nodejs-full-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Anil Vishwakarma",
+  "license": "ISC",
+  "description": "Vehiecle Service System Bootstrap Node.js, Express, and MongoDB"
+}
