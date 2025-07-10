@@ -24,9 +24,20 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1, // limit each IP to 100 requests per windowMs
 });
-app.use(limiter);
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1,
+    handler: (req, res) => {
+      res.status(429).json({
+        status: 429,
+        message: 'too many request try after some time'
+      });
+    }
+  })
+);
 
 // API routes
 app.use('/api/users', userRoutes);
