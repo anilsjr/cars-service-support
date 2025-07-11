@@ -1,3 +1,4 @@
+// Authentication controller for user registration, login, token refresh, and logout
 import bcrypt from 'bcryptjs';
 import Joi from 'joi';
 import User from '../models/user.model.js';
@@ -11,6 +12,7 @@ import {
 
 // Register
 export const register = async (req, res) => {
+    // Register a new user (Admin only)
     try {
         // Check access token and admin role
         const token = req.headers['x-access-token'];
@@ -68,6 +70,7 @@ export const register = async (req, res) => {
 
 // Login
 export const login = async (req, res) => {
+    // Login user and generate tokens
     try {
         // Validate login data
         const loginSchema = userValidationSchema.fork(['user_id', 'password'], field => field.required()).fork(Object.keys(userValidationSchema.describe().keys).filter(k => k !== 'user_id' && k !== 'password'), field => field.optional());
@@ -105,6 +108,7 @@ export const login = async (req, res) => {
 
 // Refresh
 export const refresh = async (req, res) => {
+    // Refresh access and refresh tokens
     try {
         // Validate refresh token
         const { refreshToken } = req.body;
@@ -147,6 +151,7 @@ export const refresh = async (req, res) => {
 
 // Logout
 export const logout = async (req, res) => {
+    // Logout user by invalidating refresh token
     try {
         const token = req.headers['x-access-token'];
         if (!token) {

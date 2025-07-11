@@ -1,4 +1,4 @@
-// models/User.js
+// User model and schema
 
 import mongoose from 'mongoose';
 import { PermissionSchema } from './permission.model.js';
@@ -23,6 +23,8 @@ const UserSchema = new mongoose.Schema({
     permissions: { type: [PermissionSchema], default: [] },
     refreshToken: { type: String } 
 });
+
+
 
 const User = mongoose.model('User', UserSchema);
 

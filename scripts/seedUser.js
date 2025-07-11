@@ -1,3 +1,4 @@
+// Script to seed a user into the database
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../models/user.model.js';
@@ -5,6 +6,7 @@ import { loginData } from '../mocks/loginDataJSON.js';
 import connectToDB from '../config/db.config.js';
 
 async function seedUser() {
+    // Connect to database and seed user
     connectToDB();
     const userData = loginData.data.user;
 

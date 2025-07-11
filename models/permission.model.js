@@ -1,3 +1,5 @@
+// Permission model and schema
+
 import mongoose from "mongoose";
 
 export const PermissionSchema = new mongoose.Schema({

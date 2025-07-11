@@ -1,3 +1,4 @@
+// Role model and schema
 import mongoose from "mongoose";
 
 export const RoleSchema = new mongoose.Schema({
