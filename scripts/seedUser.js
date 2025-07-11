@@ -1,25 +1,26 @@
 // Script to seed a user into the database
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import User from '../models/user.model.js';
-import { loginData } from '../mocks/loginDataJSON.js';
+import ServiceLead from '../models/servicelead.model.js';
+import { serviceLeads } from '../mocks/serviceLeadsJSON.js';
 import connectToDB from '../config/db.config.js';
 
 async function seedUser() {
     // Connect to database and seed user
     connectToDB();
-    const userData = loginData.data.user;
+    let count=0;
+    const serviceLeadData = serviceLeads.data.data;
 
-    userData.user_id = '=============';
-    // Add a password (required by schema)
-    userData.password = await bcrypt.hash('=============', 10); // choose a secure password
+    serviceLeadData.forEach(async data => {
+    data.created_at = new Date(data.created_at);
+    data.updated_at = new Date(data.updated_at);
 
+     await ServiceLead.create(data);
+
+    });
     // Convert date strings to Date objects
-    userData.created_at = new Date(userData.created_at);
-    userData.updated_at = new Date(userData.updated_at);
+    
 
     // Insert user
-    await User.create(userData);
 
     console.log('User seeded!');
     await mongoose.disconnect();
