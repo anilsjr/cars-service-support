@@ -4,13 +4,22 @@ import { userValidationSchema, validateData } from '../services/validation.servi
 import {
     generateAccessToken,
     generateRefreshToken,
+    verifyAccessToken,
     verifyRefreshToken,
 } from '../services/token.service.js';
 
 // Register
 export const register = async (req, res) => {
     try {
-        if (!req.user || req.user.role !== 'admin') {
+        // Check access token and admin role
+        const token = req.headers['x-access-token'];
+        if (!token) {
+            return res.status(401).json({ message: 'x-access-token missing' });
+        }
+        let payload = verifyAccessToken(token);
+        if (!payload) return res.status(401).json({ message: 'Invalid access token' });
+
+        if (payload.role !== 'admin') {
             return res.status(403).json({ message: 'Only admin can register new users' });
         }
         // Validate user data
