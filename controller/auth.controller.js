@@ -17,7 +17,15 @@ export const register = async (req, res) => {
         if (!token) {
             return res.status(401).json({ message: 'x-access-token missing' });
         }
-        let payload = verifyAccessToken(token);
+        let payload;
+        try {
+            payload = verifyAccessToken(token);
+        } catch (err) {
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Access token expired' });
+            }
+            return res.status(401).json({ message: 'Invalid access token' });
+        }
         console.log(payload);
 
         if (!payload) return res.status(401).json({ message: 'Invalid access token' });
@@ -99,20 +107,23 @@ export const login = async (req, res) => {
 export const refresh = async (req, res) => {
     try {
         // Validate refresh token
-        const refreshSchema = Joi.object({ refreshToken: Joi.string().required() });
-        const { error } = validateData(refreshSchema, req.body);
-        if (error) {
-            return res.status(400).json({ message: error.details[0].message });
-        }
         const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(400).json({ message: 'refresh token required' });
+        }
 
         let payload;
         try {
             payload = verifyRefreshToken(refreshToken);
         } catch (err) {
-            return res.status(403).json({ message: 'Token invalid or expired' });
+            if (err.name === 'TokenExpiredError') {
+                return res.status(403).json({ message: 'Refresh token expired' });
+            }
+            return res.status(403).json({ message: 'Token invalid' });
         }
-
+        if (!payload) return res.status(403).json({ message: 'Token invalid or expired' });
+        console.log("paylod: " + payload);
         const user = await User.findById(payload.id);
 
         if (!user || user.refreshToken !== refreshToken)
@@ -124,9 +135,11 @@ export const refresh = async (req, res) => {
         user.refreshToken = newRefreshToken;
         await user.save();
 
-        res.json({  "status": true,
+        res.json({
+            "status": true,
             "status_code": 200,
-            "message": "tokens generated successfully", accessToken: newAccessToken, refreshToken: newRefreshToken });
+            "message": "tokens generated successfully", accessToken: newAccessToken, refreshToken: newRefreshToken
+        });
     } catch (err) {
         res.status(500).json({ message: 'Refresh failed', error: err.message });
     }
@@ -135,8 +148,25 @@ export const refresh = async (req, res) => {
 // Logout
 export const logout = async (req, res) => {
     try {
-        const { user_id } = req.body;
+        const token = req.headers['x-access-token'];
+        if (!token) {
+            return res.status(401).json({ message: 'x-access-token missing' });
+        }
+        let payload;
+        try {
+            payload = verifyAccessToken(token);
+        } catch (err) {
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Access token expired' });
+            }
+            return res.status(401).json({ message: 'Invalid access token' });
+        }
+        if (!payload) return res.status(401).json({ message: 'Invalid access token' });
+
+        const user_id = payload.user_id;
+
         await User.findOneAndUpdate({ user_id }, { refreshToken: null });
+
         res.json({ message: 'Logged out' });
     } catch {
         res.status(500).json({ message: 'Logout failed' });

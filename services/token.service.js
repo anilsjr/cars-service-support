@@ -18,7 +18,7 @@ const verifyAccessToken = (token) => {
     try {
         return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     } catch (err) {
-        return null;
+        throw err;
     }
 };
 
@@ -26,7 +26,7 @@ const verifyRefreshToken = (token) => {
     try {
         return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     } catch (err) {
-        return null;
+        throw err;
     }
 };
 
