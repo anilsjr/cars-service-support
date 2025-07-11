@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema({
     role_id: { type: Number, required: true },
     role: { type: RoleSchema, required: true },
     permissions: { type: [PermissionSchema], default: [] },
-    refreshToken: { type: String } // Optional: If you want to store JWT
+    refreshToken: { type: String } 
 });
 
 const User = mongoose.model('User', UserSchema);

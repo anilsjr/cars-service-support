@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user.model.js';
+import { userValidationSchema, validateData } from '../services/validation.service.js';
 import {
     generateAccessToken,
     generateRefreshToken,
@@ -12,12 +13,32 @@ export const register = async (req, res) => {
         if (!req.user || req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Only admin can register new users' });
         }
-        const { user_id, password } = req.body;
-        const existing = await User.findOne({ user_id });
+        // Validate user data
+        const { error } = validateData(userValidationSchema, req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+        const { user_id, password, id, first_name, last_name, mobile_no, is_active, is_locked, plant_code, role_id, plant_name, role, permissions, email } = req.body;
+        const existing = await User.findOne({ $or: [{ user_id }, { email }] });
         if (existing) return res.status(400).json({ message: 'User already exists' });
 
         const hashed = await bcrypt.hash(password, 10);
-        const user = await User.create({ user_id, password: hashed });
+        const user = await User.create({
+            user_id,
+            password: hashed,
+            id,
+            first_name,
+            last_name,
+            mobile_no,
+            is_active,
+            is_locked,
+            plant_code,
+            role_id,
+            plant_name,
+            role,
+            permissions,
+            email
+        });
 
         res.status(201).json({ message: 'User created', userId: user._id });
     } catch (err) {
@@ -28,12 +49,15 @@ export const register = async (req, res) => {
 // Login
 export const login = async (req, res) => {
     try {
+        // Validate login data
+        const loginSchema = userValidationSchema.fork(['user_id', 'password'], field => field.required()).fork(Object.keys(userValidationSchema.describe().keys).filter(k => k !== 'user_id' && k !== 'password'), field => field.optional());
+        const { error } = validateData(loginSchema, req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
         const { user_id, password } = req.body;
-        if(!user_id) return res.status(401).json({msg: 'user_id required'});
-        if(!password) return res.status(401).json({msg: 'password required'});
-
         const user = await User.findOne({ user_id });
-        if (!(await bcrypt.compare(password, user.password)))
+        if (!user || !(await bcrypt.compare(password, user.password)))
             return res.status(401).json({ message: 'Invalid credentials' });
 
         const accessToken = generateAccessToken(user);
@@ -43,7 +67,7 @@ export const login = async (req, res) => {
         await user.save();
 
         res.json({ accessToken, refreshToken });
-    } catch (error){
+    } catch (error) {
         res.status(500).json({ message: 'Login failed', err_msg: error });
     }
 };
@@ -51,8 +75,13 @@ export const login = async (req, res) => {
 // Refresh
 export const refresh = async (req, res) => {
     try {
+        // Validate refresh token
+        const refreshSchema = Joi.object({ refreshToken: Joi.string().required() });
+        const { error } = validateData(refreshSchema, req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
         const { refreshToken } = req.body;
-        if (!refreshToken) return res.status(401).json({ message: 'Token required' });
 
         let payload;
         try {
@@ -79,12 +108,12 @@ export const refresh = async (req, res) => {
 };
 
 // Logout
-export const  logout = async (req, res) => {
+export const logout = async (req, res) => {
     try {
         const { user_id } = req.body;
         await User.findOneAndUpdate({ user_id }, { refreshToken: null });
         res.json({ message: 'Logged out' });
     } catch {
         res.status(500).json({ message: 'Logout failed' });
-    } 
+    }
 };
