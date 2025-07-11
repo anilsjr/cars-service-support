@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import Joi from 'joi';
 import User from '../models/user.model.js';
 import { userValidationSchema, validateData } from '../services/validation.service.js';
 import {
@@ -17,9 +18,11 @@ export const register = async (req, res) => {
             return res.status(401).json({ message: 'x-access-token missing' });
         }
         let payload = verifyAccessToken(token);
+        console.log(payload);
+
         if (!payload) return res.status(401).json({ message: 'Invalid access token' });
 
-        if (payload.role !== 'admin') {
+        if (payload.role !== 'Admin') {
             return res.status(403).json({ message: 'Only admin can register new users' });
         }
         // Validate user data
@@ -61,9 +64,8 @@ export const login = async (req, res) => {
         // Validate login data
         const loginSchema = userValidationSchema.fork(['user_id', 'password'], field => field.required()).fork(Object.keys(userValidationSchema.describe().keys).filter(k => k !== 'user_id' && k !== 'password'), field => field.optional());
         const { error } = validateData(loginSchema, req.body);
-        if (error) {
-            return res.status(400).json({ message: error.details[0].message });
-        }
+
+        // Remove password field before sending user data
         const { user_id, password } = req.body;
         const user = await User.findOne({ user_id });
         if (!user || !(await bcrypt.compare(password, user.password)))
@@ -75,7 +77,19 @@ export const login = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ accessToken, refreshToken });
+        const userData = user.toObject();
+        delete userData.password;
+        delete userData.refreshToken; // Optional: don't expose refreshToken in user data
+
+
+        res.json({
+            "status": true,
+            "status_code": 200,
+            "message": "Login successful",
+            "data": { user: userData },
+            accessToken,
+            refreshToken
+        });
     } catch (error) {
         res.status(500).json({ message: 'Login failed', err_msg: error });
     }
@@ -110,7 +124,9 @@ export const refresh = async (req, res) => {
         user.refreshToken = newRefreshToken;
         await user.save();
 
-        res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+        res.json({  "status": true,
+            "status_code": 200,
+            "message": "tokens generated successfully", accessToken: newAccessToken, refreshToken: newRefreshToken });
     } catch (err) {
         res.status(500).json({ message: 'Refresh failed', error: err.message });
     }
